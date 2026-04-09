@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -67,12 +68,27 @@ public class GUIEjemplo extends javax.swing.JFrame {
         jMenuBD.add(jMenuItemSELECT);
 
         jMenuItemINSERT.setText("Insertar");
+        jMenuItemINSERT.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemINSERTActionPerformed(evt);
+            }
+        });
         jMenuBD.add(jMenuItemINSERT);
 
         jMenuItemUPDATE.setText("Modificar");
+        jMenuItemUPDATE.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemUPDATEActionPerformed(evt);
+            }
+        });
         jMenuBD.add(jMenuItemUPDATE);
 
         jMenuItemDELETE.setText("Borrar");
+        jMenuItemDELETE.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemDELETEActionPerformed(evt);
+            }
+        });
         jMenuBD.add(jMenuItemDELETE);
 
         jMenuBar1.add(jMenuBD);
@@ -95,7 +111,7 @@ public class GUIEjemplo extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItemSELECTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemSELECTActionPerformed
-        
+        this.jTextArea1.setText("");
         try{
             // 1. Abrir conexion
             conn = DriverManager.getConnection(url, "root", "");
@@ -108,9 +124,43 @@ public class GUIEjemplo extends javax.swing.JFrame {
             // Proceso el conjunto de filas
             while(rs.next()){
                 // Accedo a las columnas en la fila en la que estoy
-                String fila = rs.getInt("id") + "i" + rs.getString("columna1") +
+                String fila = rs.getInt("id") + " - " + rs.getString("columna1")  + " - " + 
                         rs.getDouble("columna2");
                 this.jTextArea1.append(fila + "\n");
+            }
+            
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        } finally{
+            // 3. Cerrar conexion
+            try{
+                conn.close();
+            } catch (SQLException e){
+                System.err.println(e.getMessage());
+            }
+        }
+    }//GEN-LAST:event_jMenuItemSELECTActionPerformed
+
+    private void jMenuItemSALIRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemSALIRActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_jMenuItemSALIRActionPerformed
+
+    private void jMenuItemINSERTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemINSERTActionPerformed
+        this.jTextArea1.setText("");        
+        try{
+            // 1. Abrir conexion
+            conn = DriverManager.getConnection(url, "root", "");
+            
+            // 2. Ejecutar consulta --> INSERT
+            String sql = "INSERT INTO tabla1 (columna1, columna2) "
+                    + "VALUES ('Nueva inserción', 123.45)";
+            Statement st = conn.createStatement();
+            int filas = st.executeUpdate(sql);
+            if (filas > 0) {
+                JOptionPane.showMessageDialog(this, "Fila insertada");
+            } else{
+                JOptionPane.showMessageDialog(this, "No se ha podido realizar la operación",
+                        "ERROR", JOptionPane.ERROR_MESSAGE);
             }
             
         } catch (SQLException e){
@@ -125,12 +175,70 @@ public class GUIEjemplo extends javax.swing.JFrame {
                 
             }
         }
-        
-    }//GEN-LAST:event_jMenuItemSELECTActionPerformed
+    }//GEN-LAST:event_jMenuItemINSERTActionPerformed
 
-    private void jMenuItemSALIRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemSALIRActionPerformed
-        this.dispose();
-    }//GEN-LAST:event_jMenuItemSALIRActionPerformed
+    private void jMenuItemUPDATEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemUPDATEActionPerformed
+        this.jTextArea1.setText("");                
+        try{
+            // 1. Abrir conexion
+            conn = DriverManager.getConnection(url, "root", "");
+            int respuesta = Integer.parseInt(JOptionPane.showInputDialog(this, "Introduce el id de la fila a actualizar"));
+            // 2. Ejecutar consulta --> UPDATE
+            String sql = "UPDATE tabla1 SET columna1 = 'otra cosa mariposa' "
+                    + "WHERE id = " + respuesta;
+            Statement st = conn.createStatement();
+            int filas = st.executeUpdate(sql);
+            if (filas > 0) {
+                JOptionPane.showMessageDialog(this, "Fila actualizada");
+            } else{
+                JOptionPane.showMessageDialog(this, "No se ha podido realizar la operación",
+                        "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        } finally{
+            // 3. Cerrar conexion
+            try{
+                conn.close();
+            } catch (SQLException e){
+                System.err.println(e.getMessage());
+            }
+        }    
+    }//GEN-LAST:event_jMenuItemUPDATEActionPerformed
+
+    private void jMenuItemDELETEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemDELETEActionPerformed
+        this.jTextArea1.setText("");                        
+        try{
+            // 1. Abrir conexion
+            conn = DriverManager.getConnection(url, "root", "");
+            int id = Integer.parseInt(JOptionPane.showInputDialog(this, "Introduce el id de la fila a borrar"));
+            // 2. Ejecutar consulta --> INSERT
+            int respuesta = JOptionPane.showConfirmDialog(this, "¿Estás seguro?");
+            if (respuesta != JOptionPane.YES_OPTION) return;
+            
+            // Realizamos el borrado
+            String sql = "DELETE FROM tabla1 WHERE id = " + id;
+            Statement st = conn.createStatement();
+            int filas = st.executeUpdate(sql);
+            if (filas > 0) { 
+                JOptionPane.showMessageDialog(this, "Fila actualizada");
+            } else{
+                JOptionPane.showMessageDialog(this, "No se ha podido realizar la operación",
+                        "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        } finally{
+            // 3. Cerrar conexion
+            try{
+                conn.close();
+            } catch (SQLException e){
+                System.err.println(e.getMessage());
+            }
+        } 
+    }//GEN-LAST:event_jMenuItemDELETEActionPerformed
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
